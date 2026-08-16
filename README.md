@@ -63,6 +63,12 @@ want.
 Files above 95 MB are dropped from the snapshot with a warning, so one huge file
 cannot break the sync every day.
 
+**The schedule keeps itself alive.** GitHub disables a cron workflow after 60
+days of repository inactivity, and workflow runs don't count — the commits from
+this project land in the mirror repos, not here. A `keepalive` job commits a
+timestamp whenever this repo has been quiet for 45 days, so the daily run cannot
+switch itself off.
+
 ## Operating it
 
 ```sh
