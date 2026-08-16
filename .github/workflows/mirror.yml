@@ -1,0 +1,93 @@
+name: mirror
+
+on:
+  schedule:
+    # 03:17 UTC daily. Off the hour on purpose -- GitHub delays cron jobs that
+    # pile up on round times.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      only:
+        description: 'Sync only this mirror (blank = all of them)'
+        required: false
+        default: ''
+      reinit:
+        description: 'Discard the target history and re-seed from one commit'
+        type: boolean
+        default: false
+
+# Nothing here writes to this repo; the mirrors are pushed with deploy keys.
+permissions:
+  contents: read
+
+# Two runs pushing the same snapshot branch would race.
+concurrency:
+  group: mirror
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: plan
+        env:
+          ONLY: ${{ inputs.only }}
+        run: |
+          set -euo pipefail
+          if ! command -v yq >/dev/null; then
+            sudo wget -qO /usr/local/bin/yq \
+              https://github.com/mikefarah/yq/releases/download/v4.44.3/yq_linux_amd64
+            sudo chmod +x /usr/local/bin/yq
+          fi
+
+          yq -o=json '.mirrors' mirrors.yml >all.json
+          if [ -n "$ONLY" ]; then
+            matrix="$(jq -c --arg only "$ONLY" '[.[] | select(.name == $only)]' all.json)"
+          else
+            matrix="$(jq -c '.' all.json)"
+          fi
+
+          count="$(jq 'length' <<<"$matrix")"
+          echo "matrix=$matrix" >>"$GITHUB_OUTPUT"
+          echo "count=$count" >>"$GITHUB_OUTPUT"
+          echo "planning $count mirror(s): $(jq -r '[.[].name] | join(", ")' <<<"$matrix")"
+
+          if [ "$count" = "0" ]; then
+            echo "::warning::no mirror matched '$ONLY'"
+          fi
+
+  mirror:
+    needs: plan
+    if: needs.plan.outputs.count != '0'
+    runs-on: ubuntu-latest
+    # The first import of a large project is the slow one; later syncs are
+    # minutes.
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      # Each mirror wants several GB of runner disk, so keep them apart.
+      max-parallel: 2
+      matrix:
+        mirror: ${{ fromJson(needs.plan.outputs.matrix) }}
+    name: ${{ matrix.mirror.name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync ${{ matrix.mirror.name }}
+        env:
+          NAME: ${{ matrix.mirror.name }}
+          UPSTREAM: ${{ matrix.mirror.upstream }}
+          UPSTREAM_REF: ${{ matrix.mirror.upstream_ref }}
+          TARGET: ${{ matrix.mirror.target }}
+          TARGET_BRANCH: ${{ matrix.mirror.target_branch }}
+          STRIP_JSON: ${{ toJson(matrix.mirror.strip) }}
+          REINIT: ${{ inputs.reinit && '1' || '0' }}
+          DEPLOY_KEY: ${{ secrets[matrix.mirror.deploy_key_secret] }}
+        run: |
+          df -h /
+          scripts/mirror.sh

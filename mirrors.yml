@@ -1,0 +1,33 @@
+# Every entry here becomes one squashed-snapshot mirror.
+#
+#   name                 identifier, used for job names and log output
+#   upstream             clone URL of the project being mirrored
+#   upstream_ref         branch to track upstream
+#   target               owner/repo that receives the snapshots
+#   target_branch        branch to push in the target repo
+#   deploy_key_secret    Actions secret holding that repo's deploy key
+#   strip                paths dropped from every snapshot before committing
+#
+# scripts/add-mirror.sh appends entries here, and creates the target repo and
+# its deploy key at the same time.
+
+mirrors:
+  - name: linux
+    upstream: https://github.com/torvalds/linux.git
+    upstream_ref: master
+    target: cla7aye15I4nd/linux-squashed
+    target_branch: master
+    deploy_key_secret: DEPLOY_KEY_LINUX
+    strip:
+      # Upstream workflow definitions would otherwise become live workflows in
+      # this account. Nothing here needs them, so they never get committed.
+      - .github/workflows
+
+  - name: v8
+    upstream: https://github.com/v8/v8.git
+    upstream_ref: main
+    target: cla7aye15I4nd/v8
+    target_branch: main
+    deploy_key_secret: DEPLOY_KEY_V8
+    strip:
+      - .github/workflows
