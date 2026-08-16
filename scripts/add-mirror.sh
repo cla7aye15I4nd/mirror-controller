@@ -29,7 +29,9 @@ OWNER="${CONTROLLER%%/*}"
 SLUG="${UPSTREAM##*/}"
 NAME="$(printf '%s' "${SLUG%.git}" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '-')"
 NAME="${NAME%-}"
-TARGET_NAME="${2:-$NAME}"
+# Every mirror is named <project>-squashed, so nobody mistakes one of these for
+# a fork that still carries upstream history.
+TARGET_NAME="${2:-$NAME-squashed}"
 TARGET="$OWNER/$TARGET_NAME"
 SECRET="DEPLOY_KEY_$(printf '%s' "$NAME" | tr '[:lower:]-' '[:upper:]_')"
 

@@ -10,7 +10,10 @@ upstream change collapsed into a single commit.
 | mirror | upstream | target |
 |---|---|---|
 | `linux` | [torvalds/linux](https://github.com/torvalds/linux) `master` | [cla7aye15I4nd/linux-squashed](https://github.com/cla7aye15I4nd/linux-squashed) `master` |
-| `v8` | [v8/v8](https://github.com/v8/v8) `main` | [cla7aye15I4nd/v8](https://github.com/cla7aye15I4nd/v8) `main` |
+| `v8` | [v8/v8](https://github.com/v8/v8) `main` | [cla7aye15I4nd/v8-squashed](https://github.com/cla7aye15I4nd/v8-squashed) `main` |
+
+Every target is named `<project>-squashed`, so none of them can be mistaken for
+an ordinary fork that still carries upstream history.
 
 ```
 commit 3  Sync torvalds/linux @ a1b2c3d4e5f6 (2026-08-18)   47 files changed
@@ -83,10 +86,11 @@ gh workflow run mirror.yml -f only=linux -f reinit=true
 ```
 
 Add a project — creates the repo, the deploy key and the secret, then writes the
-`mirrors.yml` entry:
+`mirrors.yml` entry. The target defaults to `<project>-squashed`; pass a second
+argument only to override it:
 
 ```sh
-scripts/add-mirror.sh https://github.com/rust-lang/rust rust-squashed
+scripts/add-mirror.sh https://github.com/rust-lang/rust   # -> cla7aye15I4nd/rust-squashed
 git commit -am 'mirror rust' && git push
 gh workflow run mirror.yml -f only=rust
 ```
