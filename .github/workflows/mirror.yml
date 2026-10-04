@@ -27,12 +27,12 @@ concurrency:
 
 jobs:
   plan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.plan.outputs.matrix }}
       count: ${{ steps.plan.outputs.count }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - id: plan
         env:
@@ -64,7 +64,7 @@ jobs:
   mirror:
     needs: plan
     if: needs.plan.outputs.count != '0'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # The first import of a large project is the slow one; later syncs are
     # minutes.
     timeout-minutes: 120
@@ -76,7 +76,7 @@ jobs:
         mirror: ${{ fromJson(needs.plan.outputs.matrix) }}
     name: ${{ matrix.mirror.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Sync ${{ matrix.mirror.name }}
         env:
@@ -99,11 +99,11 @@ jobs:
   keepalive:
     needs: mirror
     if: always() && github.event_name == 'schedule'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Reset the inactivity timer if the repo has gone quiet
         run: |
