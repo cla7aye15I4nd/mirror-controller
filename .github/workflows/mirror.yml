@@ -115,6 +115,9 @@ jobs:
           date -u +'%Y-%m-%dT%H:%M:%SZ' >.keepalive
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -qam "Keep the daily schedule enabled"
+          # `.keepalive` is created on the first quiet-period reset, so it is
+          # untracked at that point. `git commit -a` skips untracked files.
+          git add -- .keepalive
+          git commit -qm "Keep the daily schedule enabled"
           git push
           echo "::notice::committed a keepalive to stop GitHub disabling the schedule"
