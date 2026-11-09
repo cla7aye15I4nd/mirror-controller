@@ -11,6 +11,7 @@ upstream change collapsed into a single commit.
 |---|---|---|
 | `linux` | [torvalds/linux](https://github.com/torvalds/linux) `master` | [cla7aye15I4nd/linux-squashed](https://github.com/cla7aye15I4nd/linux-squashed) `master` |
 | `v8` | [v8/v8](https://github.com/v8/v8) `main` | [cla7aye15I4nd/v8-squashed](https://github.com/cla7aye15I4nd/v8-squashed) `main` |
+| `firefox` | [mozilla-firefox/firefox](https://github.com/mozilla-firefox/firefox) `main` | [cla7aye15I4nd/firefox-squashed](https://github.com/cla7aye15I4nd/firefox-squashed) `main` |
 
 Every target is named `<project>-squashed`, so none of them can be mistaken for
 an ordinary fork that still carries upstream history.

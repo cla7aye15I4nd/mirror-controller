@@ -32,3 +32,12 @@ mirrors:
     deploy_key_secret: DEPLOY_KEY_V8
     strip:
       - .github/workflows
+
+  - name: firefox
+    upstream: https://github.com/mozilla-firefox/firefox.git
+    upstream_ref: main
+    target: cla7aye15I4nd/firefox-squashed
+    target_branch: main
+    deploy_key_secret: DEPLOY_KEY_FIREFOX
+    strip:
+      - .github/workflows
